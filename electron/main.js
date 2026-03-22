@@ -15,6 +15,32 @@ function getAppRoot() {
   return path.join(__dirname, '..');
 }
 
+/**
+ * 获取内嵌的 node.exe 路径（打包版）或系统 node（开发版）
+ */
+function getNodeExePath() {
+  if (app.isPackaged) {
+    // extraFiles 将 build-resources/node/ 复制到安装目录下的 node/
+    const embeddedNode = path.join(path.dirname(process.execPath), 'node', 'node.exe');
+    const fs = require('fs');
+    if (fs.existsSync(embeddedNode)) {
+      return embeddedNode;
+    }
+    console.warn('Embedded node.exe not found at', embeddedNode, ', falling back to system node');
+  }
+  return 'node';
+}
+
+/**
+ * 获取 node_modules 路径（打包版在 extraResources 中）
+ */
+function getNodeModulesPath() {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'node_modules');
+  }
+  return path.join(__dirname, '..', 'node_modules');
+}
+
 async function startServer() {
   const appRoot = getAppRoot();
 
@@ -32,23 +58,47 @@ async function startServer() {
     }
   }
 
-  // 如果userData里没有skills目录，创建symlink或复制
+  // 同步内置 skills 到 userData（保留用户安装的 skills）
   const skillsPath = path.join(userDataPath, 'skills');
-  if (!fs.existsSync(skillsPath)) {
-    const bundledSkills = path.join(appRoot, 'skills');
-    if (fs.existsSync(bundledSkills)) {
-      // 复制skills目录
-      fs.cpSync(bundledSkills, skillsPath, { recursive: true });
-    } else {
-      fs.mkdirSync(skillsPath, { recursive: true });
+  const bundledSkills = path.join(appRoot, 'skills');
+
+  if (fs.existsSync(bundledSkills)) {
+    fs.mkdirSync(skillsPath, { recursive: true });
+
+    // 复制每个内置 skill（不覆盖已存在的）
+    const bundledSkillDirs = fs.readdirSync(bundledSkills, { withFileTypes: true })
+      .filter(d => d.isDirectory());
+
+    for (const dir of bundledSkillDirs) {
+      const src = path.join(bundledSkills, dir.name);
+      const dest = path.join(skillsPath, dir.name);
+
+      // 只复制不存在的 skill
+      if (!fs.existsSync(dest)) {
+        fs.cpSync(src, dest, { recursive: true });
+      }
+    }
+
+    // 复制 README
+    const readmeSrc = path.join(bundledSkills, 'README.md');
+    const readmeDest = path.join(skillsPath, 'README.md');
+    if (fs.existsSync(readmeSrc)) {
+      fs.copyFileSync(readmeSrc, readmeDest);
     }
   }
 
-  // 复制skill-registry.json
+  // 每次启动都更新 skill-registry.json（确保用户获得最新的本地索引）
   const registryDest = path.join(userDataPath, 'skill-registry.json');
   const registrySrc = path.join(appRoot, 'skill-registry.json');
-  if (!fs.existsSync(registryDest) && fs.existsSync(registrySrc)) {
+  if (fs.existsSync(registrySrc)) {
     fs.copyFileSync(registrySrc, registryDest);
+  }
+
+  // 复制 prompts 目录
+  const promptsDest = path.join(userDataPath, 'prompts');
+  const promptsSrc = path.join(appRoot, 'prompts');
+  if (!fs.existsSync(promptsDest) && fs.existsSync(promptsSrc)) {
+    fs.cpSync(promptsSrc, promptsDest, { recursive: true });
   }
 
   // 加载dotenv
@@ -56,6 +106,17 @@ async function startServer() {
 
   // 告诉 dashboard server app 的实际位置（asar 内）
   process.env.XIAOBA_APP_ROOT = appRoot;
+
+  // 打包版：设置 NODE_PATH 让子进程能找到 node_modules
+  const nodeModulesPath = getNodeModulesPath();
+  process.env.XIAOBA_NODE_MODULES = nodeModulesPath;
+  if (app.isPackaged) {
+    process.env.NODE_PATH = nodeModulesPath;
+    require('module').Module._initPaths();
+  }
+
+  // 设置内嵌 node.exe 路径供 service-manager 使用
+  process.env.XIAOBA_NODE_EXE = getNodeExePath();
 
   // 直接在主进程启动dashboard server
   const { startDashboard } = require(path.join(appRoot, 'dist', 'dashboard', 'server'));

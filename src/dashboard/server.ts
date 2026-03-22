@@ -35,7 +35,7 @@ export async function startDashboard(port: number = DEFAULT_PORT): Promise<void>
     process.exit(0);
   });
 
-  app.listen(port, () => {
+  app.listen(port, '127.0.0.1', () => {
     Logger.success(`\nXiaoBa Dashboard 已启动`);
     Logger.info(`打开浏览器访问: http://localhost:${port}\n`);
   });
