@@ -1,8 +1,10 @@
-import { ChildProcess, spawn, fork } from 'child_process';
+import { ChildProcess, spawn, execSync } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { EventEmitter } from 'events';
+
+const isWindows = process.platform === 'win32';
 
 export interface ServiceInfo {
   name: string;
@@ -48,26 +50,53 @@ export class ServiceManager extends EventEmitter {
     const packaged = this.isPackaged();
     const appRoot = this.getAppRoot();
 
-    const services = ['catscompany', 'feishu'];
-    const labels = {
-      catscompany: 'Cats Company 机器人',
-      feishu: '飞书机器人',
-    };
+    let command: string;
+    let args: (name: string) => string[];
 
-    for (const name of services) {
-      this.services.set(name, {
-        info: {
-          name,
-          label: labels[name as keyof typeof labels],
-          command: packaged ? 'fork' : 'spawn',
-          args: packaged
-            ? [path.join(appRoot, 'dist', 'index.js'), name]
-            : [path.join(this.projectRoot, 'src', 'index.ts'), name],
-          status: 'stopped',
-        },
-        logs: [],
-      });
+    if (packaged) {
+      // 打包版：优先使用内嵌的 node.exe，否则回退系统 node
+      command = process.env.XIAOBA_NODE_EXE || 'node';
+      const distEntry = path.join(appRoot, 'dist', 'index.js');
+      args = (name) => [distEntry, name];
+    } else {
+      // 开发版：用 tsx 跑 ts 源码
+      command = path.join(this.projectRoot, 'node_modules', '.bin', 'tsx');
+      const entry = path.join(this.projectRoot, 'src', 'index.ts');
+      args = (name) => [entry, name];
     }
+
+    this.services.set('catscompany', {
+      info: {
+        name: 'catscompany',
+        label: 'Cats Company 机器人',
+        command,
+        args: args('catscompany'),
+        status: 'stopped',
+      },
+      logs: [],
+    });
+
+    this.services.set('feishu', {
+      info: {
+        name: 'feishu',
+        label: '飞书机器人',
+        command,
+        args: args('feishu'),
+        status: 'stopped',
+      },
+      logs: [],
+    });
+
+    this.services.set('weixin', {
+      info: {
+        name: 'weixin',
+        label: '微信机器人',
+        command,
+        args: args('weixin'),
+        status: 'stopped',
+      },
+      logs: [],
+    });
   }
 
   getAll(): ServiceInfo[] {
@@ -109,22 +138,21 @@ export class ServiceManager extends EventEmitter {
       envVars = { ...envVars, ...parsed };
     }
 
-    // 打包版：cwd 设为 app 目录，让子进程能解析 node_modules
-    const spawnCwd = this.isPackaged()
-      ? this.getAppRoot()
-      : this.projectRoot;
+    // cwd 统一用 process.cwd()，Electron 主进程已 chdir 到 userData 目录
+    // 这样子进程创建的 skill 文件和 Dashboard 读取的在同一个目录
+    const spawnCwd = process.cwd();
 
-    const child = svc.info.command === 'fork'
-      ? fork(svc.info.args[0], svc.info.args.slice(1), {
-          cwd: spawnCwd,
-          env: envVars,
-          stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-        })
-      : spawn(svc.info.command, svc.info.args, {
-          cwd: spawnCwd,
-          env: envVars,
-          stdio: ['ignore', 'pipe', 'pipe'],
-        });
+    // 打包版：确保子进程能找到 node_modules
+    if (this.isPackaged() && process.env.XIAOBA_NODE_MODULES) {
+      envVars.NODE_PATH = process.env.XIAOBA_NODE_MODULES;
+    }
+
+    const child = spawn(svc.info.command, svc.info.args, {
+      cwd: spawnCwd,
+      env: envVars,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
 
     svc.process = child;
     svc.info.status = 'running';
@@ -164,6 +192,24 @@ export class ServiceManager extends EventEmitter {
     return this.getService(name)!;
   }
 
+  /**
+   * 跨平台终止进程：Windows 用 taskkill，其他平台用 SIGTERM/SIGKILL
+   */
+  private killProcess(proc: ChildProcess, force: boolean = false): void {
+    if (!proc.pid) return;
+
+    if (isWindows) {
+      try {
+        // /T = 终止子进程树, /F = 强制终止
+        execSync(`taskkill /PID ${proc.pid} /T /F`, { stdio: 'ignore' });
+      } catch {
+        // 进程可能已退出，忽略错误
+      }
+    } else {
+      proc.kill(force ? 'SIGKILL' : 'SIGTERM');
+    }
+  }
+
   stop(name: string): ServiceInfo {
     const svc = this.services.get(name);
     if (!svc) throw new Error(`Service "${name}" not found`);
@@ -171,14 +217,19 @@ export class ServiceManager extends EventEmitter {
       throw new Error(`Service "${name}" is not running`);
     }
 
-    svc.process.kill('SIGTERM');
+    if (isWindows) {
+      // Windows: 直接用 taskkill 强制终止进程树
+      this.killProcess(svc.process, true);
+    } else {
+      svc.process.kill('SIGTERM');
 
-    // 5秒后强制kill
-    setTimeout(() => {
-      if (svc.process && !svc.process.killed) {
-        svc.process.kill('SIGKILL');
-      }
-    }, 5000);
+      // 5秒后强制kill
+      setTimeout(() => {
+        if (svc.process && !svc.process.killed) {
+          svc.process.kill('SIGKILL');
+        }
+      }, 5000);
+    }
 
     return this.getService(name)!;
   }
@@ -192,7 +243,7 @@ export class ServiceManager extends EventEmitter {
       svc.process.once('exit', () => {
         setTimeout(() => this.start(name), 500);
       });
-      svc.process.kill('SIGTERM');
+      this.killProcess(svc.process);
       return this.getService(name)!;
     }
 
@@ -202,7 +253,7 @@ export class ServiceManager extends EventEmitter {
   stopAll() {
     for (const [name, svc] of this.services) {
       if (svc.info.status === 'running' && svc.process) {
-        svc.process.kill('SIGTERM');
+        this.killProcess(svc.process, true);
       }
     }
   }

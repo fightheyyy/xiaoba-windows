@@ -1,194 +1,39 @@
-# ------------------------------
-# Node / TypeScript
-# ------------------------------
 node_modules/
 dist/
-coverage/
-.nyc_output/
-*.tsbuildinfo
-
-# ------------------------------
-# Python
-# ------------------------------
-.venv/
-venv/
-ENV/
-env/
+release/
+.env
+*.log
+turnLogs/
 __pycache__/
-*.py[cod]
-*.pyo
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.ipynb_checkpoints/
+skills/_crafted/
+skills/_learned/
 
-# ------------------------------
-# Python libs (local)
-# ------------------------------
-pylibs/
-
-# ------------------------------
-# Internal docs (keep only README.md)
-# ------------------------------
-/*.md
-!README.md
-
-# ------------------------------
-# Test / examples / eval
-# ------------------------------
-tests/
-examples/
-eval/
-eval/benchmarks/
-eval/reports/
-
-# ------------------------------
-# Deploy artifacts
-# ------------------------------
-deploy/tenants/
-deploy/admin/
-deploy/docker-compose.multitenant.yml
-deploy/Dockerfile
-deploy/docker/
-
-# ------------------------------
-# Templates / diagrams
-# ------------------------------
-diagrams/
-templates/
-
-# ------------------------------
-# Runtime artifacts
-# ------------------------------
-logs/
-workspace/
-extracted/
-files/
-docs/analysis/
-docs/runs/
-audit/
+# 数据文件
 data/
-tenants/*/data/
-tenants/*/.env
-tenants/*/runtime.json
+logs/
+files/
+
+# 临时文件
 *.tmp
 *.temp
-*.bak
-.cache/
-
-# ------------------------------
-# Local files / uploads
-# ------------------------------
-pdfs/
-Group/
-
-# ------------------------------
-# Generated outputs
-# ------------------------------
-docs/ppt/**/*.pptx
-*.pptx
-
-# ------------------------------
-# Misc generated / internal
-# ------------------------------
-test-*
-s.status
-gen-arch.py
-run_api.py
-start_analysis.sh
-setup-path.ps1
-xiaoba-arch.*
-.claude/
-workspace/
-docs/experiments/
-docs/xhs/
-docs/ppt/
-docs/writing/
-docs/research-plan/
-docs/*.md
-
-# ------------------------------
-# User-specific startup scripts
-# ------------------------------
-start-*.bat
-
-# ------------------------------
-# User-specific prompts
-# ------------------------------
-prompts/system-prompt-*.md
-
-# ------------------------------
-# Artifacts / junk
-# ------------------------------
-返回结果
--p/
-results/
-/*.py
-/*.html
-!dashboard/**/*.html
-/*.pdb
-/*.txt
-/*.jpg
-/*.png
-/*.pdf
-
-# ------------------------------
-# Electron build output
-# ------------------------------
-release/
-
-# ------------------------------
-# Large binaries
-# ------------------------------
-xiaoba.png
-
-# ------------------------------
-# Skills (only keep agent-browser and _tool-skills)
-# ------------------------------
-skills/*
-!skills/README.md
-!skills/agent-browser/
-!skills/_tool-skills/
-!skills/report/
-!skills/self-evolution/
-
-# ------------------------------
-# Secrets / local config
-# ------------------------------
-.env
-.env.*
-.xiaoba/
-.claude/settings.local.json
-
-# ------------------------------
-# Vendor / third-party
-# ------------------------------
-vendor/
-
-# ------------------------------
-# PR / temp files
-# ------------------------------
-.pr*
-tierlist*.json
-tierlist*.png
-temp_*.py
-
-# ------------------------------
-# Logs
-# ------------------------------
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# ------------------------------
-# OS / Editor
-# ------------------------------
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
 *.swp
 *.swo
 *~
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# 打包文件
+*.dmg
+*.exe
+*.app
+*.deb
+*.rpm
+*.AppImage
+
+# 系统文件
+bash.exe.stackdump

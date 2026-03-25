@@ -301,22 +301,8 @@ thinking 工具使用场景（谨慎使用）：
       }
 
       // 动态注入当前可用 skills 列表（临时上下文，不持久化）
-      // 检测是否需要重新加载 skills（仅在上一轮有 skill 创建时）
-      const needReloadSkills = this.messages.slice(-10).some(msg => {
-        if (msg.role === 'tool' && typeof msg.content === 'string') {
-          try {
-            const parsed = JSON.parse(msg.content);
-            return parsed.__reload_skills__ === true;
-          } catch {
-            return false;
-          }
-        }
-        return false;
-      });
-
-      if (needReloadSkills) {
-        await this.services.skillManager.loadSkills();
-      }
+      // 每次处理消息时重新从磁盘加载 skills，确保 Dashboard 的禁用/启用/安装/删除立即生效
+      await this.services.skillManager.loadSkills();
 
       const skills = this.services.skillManager.getUserInvocableSkills();
       if (skills.length > 0) {

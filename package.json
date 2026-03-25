@@ -15,6 +15,7 @@
     "electron:build": "npm run build && electron-builder",
     "electron:build:mac": "npm run build && electron-builder --mac",
     "electron:build:win": "npm run build && electron-builder --win",
+    "electron:build:linux": "npm run build && electron-builder --linux",
     "watch": "tsc --watch",
     "test": "tsx --test tests/**/*.test.ts",
     "report": "node dist/index.js chat --exec '/report'",
@@ -30,7 +31,7 @@
     "typescript"
   ],
   "author": "CatCompany",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/buildsense-ai/XiaoBa-CLI.git"
@@ -51,10 +52,7 @@
     "glob": "^10.3.10",
     "gray-matter": "^4.0.3",
     "inquirer": "^8.2.7",
-    "ora": "^5.4.1",
-
-    "terminal-image": "^4.2.0",
-    "turndown": "^7.2.2"
+    "ora": "^5.4.1"
   },
   "devDependencies": {
     "@types/deasync": "^0.1.5",
@@ -66,6 +64,7 @@
     "@types/ws": "^8.18.1",
     "electron": "^33.4.11",
     "electron-builder": "^26.8.1",
+    "electron-packager": "^17.1.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
@@ -75,6 +74,7 @@
   "build": {
     "appId": "com.catcompany.xiaoba",
     "productName": "XiaoBa",
+    "icon": null,
     "directories": {
       "output": "release"
     },
@@ -83,12 +83,14 @@
       "dist/**/*",
       "electron/**/*",
       "dashboard/**/*",
+      "prompts/**/*",
       "skills/agent-browser/**/*",
       "skills/_tool-skills/**/*",
       "skills/report/**/*",
       "skills/self-evolution/**/*",
       "skills/deploy-ops/**/*",
       "skills/protein-analysis/**/*",
+      "skills/skill-publish/**/*",
       "skills/README.md",
       "skill-registry.json",
       ".env.example",
@@ -99,14 +101,26 @@
         "from": "node_modules",
         "to": "node_modules",
         "filter": [
-          "express/**",
-          "dotenv/**",
-          "axios/**",
-          "chalk/**",
-          "commander/**",
-          "glob/**",
-          "gray-matter/**",
-          "ora/**"
+          "**/*.node",
+          "**/*.js",
+          "**/*.json",
+          "!**/.bin/**",
+          "!**/test/**",
+          "!**/tests/**",
+          "!**/*.md",
+          "!electron/**",
+          "!electron-builder/**",
+          "@types/**",
+          "!typescript/**"
+        ]
+      }
+    ],
+    "extraFiles": [
+      {
+        "from": "build-resources/node",
+        "to": "node",
+        "filter": [
+          "**/*"
         ]
       }
     ],
@@ -115,19 +129,27 @@
       "target": [
         "dmg"
       ],
-      "icon": null
+      "icon": "build-resources/icon.png"
     },
     "win": {
       "target": [
         "nsis"
       ],
-      "icon": null
+      "icon": "build-resources/icon.ico"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "shortcutName": "XiaoBa"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development",
+      "icon": "build-resources/icon.png"
     },
     "dmg": {
       "title": "XiaoBa",

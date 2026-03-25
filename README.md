@@ -1,177 +1,148 @@
 <div align="center">
+  <img src="assets/banner.png" alt="XiaoBa Banner" width="100%">
 
-```
-██╗  ██╗██╗ █████╗  ██████╗ ██████╗  █████╗
-╚██╗██╔╝██║██╔══██╗██╔═══██╗██╔══██╗██╔══██╗
- ╚███╔╝ ██║███████║██║   ██║██████╔╝███████║
- ██╔██╗ ██║██╔══██║██║   ██║██╔══██╗██╔══██╗
-██╔╝ ██╗██║██║  ██║╚██████╔╝██████╔╝██║  ██║
-╚═╝  ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝
-```
+  # 🐱 XiaoBa - 世界上最拟人的 AI Agent
 
-**Your AI. Your Rules. Your Terminal.**
+  **不是工具，是伙伴 | 像人一样思考和交流的智能助手**
 
-An extensible AI Agent Runtime that runs in your terminal,</br>
-connects to your IM platforms, and bends to your will.
+  [![Release](https://img.shields.io/github/v/release/buildsense-ai/XiaoBa-CLI)](https://github.com/buildsense-ai/XiaoBa-CLI/releases)
+  [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+  [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/buildsense-ai/XiaoBa-CLI)
 
-[![Node](https://img.shields.io/badge/node-%3E%3D18-black?style=for-the-badge&logo=nodedotjs&logoColor=%23f0db4f&labelColor=0a0a0a)](https://nodejs.org)
-[![TS](https://img.shields.io/badge/typescript-5.3-black?style=for-the-badge&logo=typescript&logoColor=%233178c6&labelColor=0a0a0a)](https://typescriptlang.org)
-[![MIT](https://img.shields.io/badge/license-MIT-black?style=for-the-badge&labelColor=0a0a0a&color=f5c542)](./LICENSE)
-
-<br/>
-
----
-
-**3 Skills** · **14 Core Tools** · **Hot-Reload** · **Multi-LLM** · **IM Integration**
-
-[Quick Start](#-quick-start) · [Architecture](#-architecture) · [Skills](#-skills) · [Configuration](#%EF%B8%8F-configuration)
-
+  [快速开始](#-快速开始) • [功能特性](#-功能特性) • [下载安装](#-下载安装) • [文档](#-文档)
 </div>
 
-<br/>
-
-## Quick Start
-
-```bash
-git clone https://github.com/buildsense-ai/XiaoBa-CLI.git
-cd XiaoBa-CLI
-npm install
-cp .env.example .env   # fill in your API keys
-npm run build
-```
-
-```bash
-# Interactive CLI
-node dist/index.js chat
-
-# Feishu Bot
-node dist/index.js feishu
-
-# CatsCompany Bot
-node dist/index.js catscompany
-```
-
-<br/>
-
-## Architecture
-
-```
-┌─────────────────────────────────────┐
-│         AI Agent Runtime            │
-├─────────────────────────────────────┤
-│  Skill Layer                        │
-│  - SKILL.md prompt + optional scripts│
-│  - Hot-reload, self-evolution       │
-├─────────────────────────────────────┤
-│  Tool Layer (14 tools)              │
-│  - File: read, write, edit, glob, grep │
-│  - Shell: execute_shell             │
-│  - Communication: send_text, send_file │
-│  - Meta: thinking, skill            │
-│  - Sub-agent: spawn, check, stop, resume │
-├─────────────────────────────────────┤
-│  Platform Adapters                  │
-│  - Feishu (WebSocket)               │
-│  - CatsCompany (WebSocket)          │
-│  - CLI (interactive)                │
-└─────────────────────────────────────┘
-```
-
-### Core Tools (14)
-
-| Category | Tool | Description |
-|----------|------|-------------|
-| File | `read_file` | Read file contents |
-| File | `write_file` | Write file |
-| File | `edit_file` | Edit file (diff-based) |
-| File | `glob` | File search (glob patterns) |
-| File | `grep` | Content search (regex) |
-| Shell | `execute_shell` | Run shell commands |
-| Comm | `send_text` | Send text message to user |
-| Comm | `send_file` | Send file to user |
-| Meta | `thinking` | Internal reasoning (not visible to user) |
-| Meta | `skill` | Invoke a skill |
-| Agent | `spawn_subagent` | Spawn background sub-agent |
-| Agent | `check_subagent` | Check sub-agent progress |
-| Agent | `stop_subagent` | Stop a sub-agent |
-| Agent | `resume_subagent` | Resume a sub-agent |
-
-### Skills (3)
-
-Pluggable capability modules defined in Markdown.
-
-| Skill | Description |
-|-------|-------------|
-| `sub-agent` | Background sub-task execution |
-| `agent-browser` | Browser automation via Playwright |
-| `self-evolution` | Create new skills and tools at runtime |
-
-<br/>
-
-## Skills
-
-### Using Skills
-
-```bash
-# Slash command in chat
-/agent-browser https://example.com
-
-# Or mention by name — auto-triggered if invocable: both
-```
-
-### Creating Custom Skills
-
-1. Create `skills/my-skill/SKILL.md`:
-
-```markdown
----
-name: my-skill
-description: What this skill does
-invocable: user
 ---
 
-Your prompt here...
+## 💡 什么是 XiaoBa？
+
+XiaoBa 不是传统的 AI 助手，它是一个**真正拟人化的 Agent**。
+
+- 🗣️ **像人一样交流** - 不用表格、进度条、Markdown 格式，就像在微信上聊天
+- 🧠 **像人一样思考** - 遇到问题会自己想办法解决，不会动不动就问你
+- 🤝 **像人一样工作** - 交代任务就去做，做完了告诉你结果，不啰嗦
+- 💭 **有情感感知** - 能理解你的情绪，在你沮丧时给予支持
+
+**传统 AI：**
+```
+用户：帮我读一下这篇论文
+AI：好的！我将为您执行以下步骤：
+1. ✅ 下载论文
+2. ⏳ 分析内容
+3. ⏳ 生成摘要
+...
 ```
 
-2. Optional: add scripts under `skills/my-skill/`
-3. Hot-reload: `skill reload` or auto-detected
+**XiaoBa：**
+```
+用户：帮我读一下这篇论文
+小八：好的老师，我先看看。
+（默默工作...）
+小八：读完了，这篇主要讲...
+```
 
-Or use the **self-evolution** skill to create new skills interactively.
+---
 
-<br/>
+## ✨ 功能特性
 
-## Configuration
+### 🖥️ 桌面应用
+- **跨平台支持** - Windows、macOS、Linux 全平台覆盖
+- **Electron 打包** - 原生体验，开箱即用
+- **可视化 Dashboard** - 一键启停服务，实时查看日志
 
-Copy `.env.example` to `.env`:
+### 🤖 多平台机器人
+- **飞书机器人** - 企业协作，团队共享
+- **微信机器人** - 个人助手，随时随地
+- **Cats Company** - 社区平台接入
 
+### 🔌 强大的 Skill 系统
+- **可扩展架构** - 通过 Skill 插件无限扩展能力
+- **官方 Skill Hub** - 社区共享，一键安装
+- **自定义 Skill** - 支持 Python/TypeScript 编写专属技能
+
+### 🎯 智能交互
+- **拟人化对话** - 自然流畅，不像机器人
+- **情感感知** - 理解你的情绪状态
+- **主动解决问题** - 遇到错误会自己想办法，不轻易求助
+- **群聊社交** - 懂得什么时候该说话，什么时候该沉默
+
+### 💾 智能会话管理
+- **持久化存储** - JSONL 格式，每条消息独立一行，永不丢失
+- **自动归档** - 会话结束自动归档，保持工作区整洁
+- **完整日志** - 记录每轮对话的用户输入、AI 回复、工具调用、Token 消耗
+- **按日期分类** - 自动按日期和会话类型组织日志，方便追溯
+- **数据分析** - 支持日报生成、Skill 提取、行为分析
+
+---
+
+## 🚀 快速开始
+
+### Windows 用户
+1. 下载 [XiaoBa Setup 0.1.0.exe](https://github.com/buildsense-ai/XiaoBa-CLI/releases/latest)
+2. 双击安装
+3. 启动应用，配置 API Key
+4. 在 Dashboard 中启动所需的机器人服务
+
+### macOS 用户
+1. 下载 [XiaoBa-0.1.0-arm64.dmg](https://github.com/buildsense-ai/XiaoBa-CLI/releases/latest)
+2. 双击安装
+3. 启动应用，配置 API Key
+4. 在 Dashboard 中启动所需的机器人服务
+
+### 配置说明
+复制 `.env.example` 为 `.env`，填入你的配置：
 ```bash
-# Required: LLM provider
+# LLM 配置
 GAUZ_LLM_PROVIDER=anthropic
-GAUZ_LLM_MODEL=claude-sonnet-4-20250514
-GAUZ_LLM_API_KEY=your-key
+GAUZ_LLM_API_KEY=your_api_key
 
-# Optional: Feishu bot
-FEISHU_APP_ID=your-app-id
-FEISHU_APP_SECRET=your-secret
+# 飞书机器人（可选）
+FEISHU_APP_ID=your_app_id
+FEISHU_APP_SECRET=your_app_secret
 
-# Optional: CatsCompany bot
-CATSCOMPANY_SERVER_URL=wss://your-server/v0/channels
-CATSCOMPANY_API_KEY=your-key
-CATSCOMPANY_HTTP_BASE_URL=https://your-server
+# 微信机器人（可选）
+WEIXIN_TOKEN=your_token
 ```
 
-See [.env.example](./.env.example) for all options.
+---
 
-<br/>
+## 🛠️ 开发
 
-## License
+```bash
+# 安装依赖
+npm install
 
-[MIT](./LICENSE)
+# 开发模式
+npm run electron:dev
+
+# 构建
+npm run electron:build:win   # Windows
+npm run electron:build:mac   # macOS
+npm run electron:build:linux # Linux
+```
+
+---
+
+## 📚 文档
+
+- [Skill 开发指南](https://github.com/buildsense-ai/XiaoBa-Skill-Hub)
+- [API 文档](docs/API.md)
+- [配置说明](docs/CONFIG.md)
+
+---
+
+## 🏪 Skill Hub
+
+访问 [XiaoBa-Skill-Hub](https://github.com/buildsense-ai/XiaoBa-Skill-Hub) 获取更多社区 Skills。
+
+---
+
+## 📄 License
+
+Apache-2.0 © CatCompany
 
 ---
 
 <div align="center">
-
-Built with intent by **CatCompany**
-
+  Made with ❤️ by CatCompany
 </div>
