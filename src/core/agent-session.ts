@@ -650,6 +650,61 @@ ${conversationText}
     }
   }
 
+  /** 过期时归档会话（不生成摘要，依赖 context-compressor） */
+  async archiveSession(): Promise<void> {
+    if (this.messages.length === 0) return;
+
+    try {
+      // 判断是否需要主动唤醒用户
+      if (this.wakeupReply) {
+        const hasUserMessages = this.messages.some(m => m.role === 'user');
+        if (hasUserMessages) {
+          const conversationText = this.messages
+            .filter(m => m.role === 'user' || m.role === 'assistant')
+            .slice(-10) // 只取最后 10 条消息判断
+            .map(m => `${m.role === 'user' ? '用户' : 'AI'}: ${m.content}`)
+            .join('\n');
+
+          const wakeupPrompt = `请判断以下对话是否需要主动唤醒用户。返回 JSON 格式（不要包含 markdown 代码块）：
+{ "wakeup": null 或 "一条自然的消息" }
+
+判断规则：
+- 有未完成的任务或承诺 → 需要唤醒
+- 后台任务已完成但结果还没告诉用户 → 需要唤醒
+- 用户最后的问题没有得到完整回答 → 需要唤醒
+- 对话自然结束、用户主动告别、或只是闲聊 → 不需要唤醒（返回 null）
+
+对话内容：
+${conversationText}`;
+
+          try {
+            const result = await this.services.aiService.chat([
+              { role: 'user', content: wakeupPrompt },
+            ]);
+
+            const raw = result.content || '{}';
+            const jsonStr = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?\s*```$/i, '').trim();
+            const parsed = JSON.parse(jsonStr);
+
+            if (parsed.wakeup && this.wakeupReply) {
+              await this.wakeupReply(parsed.wakeup);
+              Logger.info(`[会话 ${this.key}] 主动唤醒用户: ${parsed.wakeup.slice(0, 100)}`);
+            }
+          } catch (err: any) {
+            Logger.warning(`[会话 ${this.key}] 唤醒判断失败: ${err.message}`);
+          }
+        }
+      }
+
+      // 归档到 SessionStore
+      SessionStore.getInstance().archiveSession(this.key);
+      this.messages = [];
+      Logger.info(`会话已归档: ${this.key}`);
+    } catch (error) {
+      Logger.error(`归档会话失败: ${error}`);
+    }
+  }
+
   // ─── 查询方法 ──────────────────────────────────────
 
   isBusy(): boolean {

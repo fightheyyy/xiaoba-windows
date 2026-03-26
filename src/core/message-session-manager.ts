@@ -1,8 +1,8 @@
 import { AgentSession, AgentServices } from './agent-session';
 import { Logger } from '../utils/logger';
 
-/** 默认会话过期时间：30 分钟 */
-const DEFAULT_SESSION_TTL = 30 * 60 * 1000;
+/** 默认会话过期时间：60 分钟 */
+const DEFAULT_SESSION_TTL = 60 * 60 * 1000;
 
 /**
  * 统一唤醒回复函数签名
@@ -100,8 +100,8 @@ export class MessageSessionManager {
           this.destroying.add(key);
           this.sessions.delete(key);
           Logger.info(`会话已过期清理: ${key}`);
-          session.summarizeAndDestroy()
-            .catch(err => Logger.warning(`会话 ${key} 摘要保存失败: ${err}`))
+          session.archiveSession()
+            .catch(err => Logger.warning(`会话 ${key} 归档失败: ${err}`))
             .finally(() => this.destroying.delete(key));
         }
       }
