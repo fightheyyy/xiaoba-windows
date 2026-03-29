@@ -31,7 +31,8 @@ export function createImageBlock(filePath: string): ContentBlock | null {
       media_type: result.mediaType,
       data: result.data,
     },
-  };
+    filePath, // 保存原始路径
+  } as any;
 }
 
 export function isImageFile(filePath: string): boolean {
